@@ -388,6 +388,32 @@ void sendRawCalibrationData(float * const data, int calibrationType, unsigned ch
     }
 }
 
+void sendGyroData(int16_t * const data, unsigned char const sensorId, int type)
+{
+    if (Udp.beginPacket(host, port) > 0)
+    {
+        int16_t x = data[0];
+        int16_t y = data[1];
+        int16_t z = data[2];
+        sendType(type);
+        sendPacketNumber();
+        Udp.write(&sensorId, 1);
+        Udp.write(convert_to_chars(x, buf), sizeof(x));
+        Udp.write(convert_to_chars(y, buf), sizeof(y));
+        Udp.write(convert_to_chars(z, buf), sizeof(z));
+        if (Udp.endPacket() == 0)
+        {
+            //Serial.print("Write error: ");
+            //Serial.println(Udp.getWriteError());
+        }
+    }
+    else
+    {
+        //Serial.print("Write error: ");
+        //Serial.println(Udp.getWriteError());
+    }
+}
+
 void sendCalibrationFinished(int calibrationType, unsigned char const sensorId, int type) {
     if (Udp.beginPacket(host, port) > 0)
     {
@@ -622,7 +648,7 @@ void clientUpdate(Sensor * const sensor, Sensor * const sensor2)
                 Serial.println("Connection to server timed out");
             }
         }
-            
+
         if(!connected) {
             connectClient();
         } else if(sensorStateNotified1 != sensor->isWorking() || sensorStateNotified2 != sensor2->isWorking()) {
@@ -673,7 +699,7 @@ void connectClient()
         else
         {
             break;
-        }   
+        }
     }
     if(lastConnectionAttemptMs + 1000 < now)
     {

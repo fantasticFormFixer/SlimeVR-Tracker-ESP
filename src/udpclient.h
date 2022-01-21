@@ -85,6 +85,7 @@ void sendByte(uint8_t const value, uint8_t sensorId, int type);
 void sendSensorInfo(unsigned char const sensorId, unsigned char const sensorState, int type);
 void sendRawCalibrationData(int * const data, int calibrationType, unsigned char const sensorId, int type);
 void sendRawCalibrationData(float * const data, int calibrationType, unsigned char const sensorId, int type);
+void sendGyroData(int16_t * const data, unsigned char const sensorId, int type);
 void sendCalibrationFinished(int calibrationType, unsigned char const sensorId, int type);
 void setConfigReceivedCallback(configReceivedCallback);
 void setCommandReceivedCallback(commandReceivedCallback);

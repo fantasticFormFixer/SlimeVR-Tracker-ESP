@@ -87,7 +87,7 @@ void MPU6050Sensor::motionSetup() {
 #ifdef IMU_MPU6050_RUNTIME_CALIBRATION
     // We don't have to manually calibrate if we are using the dmp's automatic calibration
 #else // IMU_MPU6050_RUNTIME_CALIBRATION
-        
+
         Serial.println(F("[NOTICE] Performing startup calibration of accel and gyro..."));
         // Do a quick and dirty calibration. As the imu warms up the offsets will change a bit, but this will be good-enough
         delay(1000); // A small sleep to give the users a chance to stop it from moving
@@ -137,6 +137,17 @@ void MPU6050Sensor::motionLoop() {
         return;
 
     if(imu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
+        #if IMU == IMU_MPU6500
+        float temperature = imu.getTemperature() / 333.87f + 21;
+        #else
+        float temperature = imu.getTemperature() / 340 + 36.53f;
+        #endif
+        sendFloat(temperature, 100);
+
+        int16_t gyroData[3] = {0};
+        imu.dmpGetGyro(gyroData, fifoBuffer);
+        sendGyroData(gyroData, isSecond ? 1 : 0, 101);
+
         imu.dmpGetQuaternion(&rawQuat, fifoBuffer);
 
         q[0] = rawQuat.x;
@@ -161,7 +172,7 @@ void MPU6050Sensor::sendData() {
 
 void MPU6050Sensor::startCalibration(int calibrationType) {
     digitalWrite(CALIBRATING_LED, LOW);
-    
+
 #ifdef IMU_MPU6050_RUNTIME_CALIBRATION
     Serial.println("MPU is using automatic runtime calibration. Place down the device and it should automatically calibrate after a few seconds");
 

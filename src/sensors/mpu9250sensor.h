@@ -29,10 +29,17 @@
 
 #include <MPU9250_6Axis_MotionApps_V6_12.h>
 
+#if defined(MPU9250_USE_MAHONY) && MPU9250_USE_MAHONY
+    #include <Fusion/Fusion.h>
+#endif
+
 class MPU9250Sensor : public Sensor
 {
 public:
-    MPU9250Sensor(uint8_t id, uint8_t address, float rotation) : Sensor("MPU9250Sensor", IMU_MPU9250, id, address, rotation){};
+    MPU9250Sensor(uint8_t id, uint8_t address, float rotation) : Sensor("MPU9250Sensor", IMU_MPU9250, id, address, rotation){
+        this->dmpSensorOffset = FusionQuaternion{this->sensorOffset[0], this->sensorOffset[1], this->sensorOffset[2], this->sensorOffset[3]};
+        FusionAhrsInitialise(&this->ahrs);
+    };
     ~MPU9250Sensor(){};
     void motionSetup() override final;
     void motionLoop() override final;
@@ -49,9 +56,6 @@ private:
     uint8_t fifoBuffer[64]{}; // FIFO storage buffer
     // raw data and scaled as vector
     float q[4]{1.0f, 0.0f, 0.0f, 0.0f}; // for raw filter
-    float Axyz[3]{};
-    float Gxyz[3]{};
-    float Mxyz[3]{};
     float rawMag[3]{};
     Quat correction{0, 0, 0, 0};
     // Loop timing globals
@@ -59,6 +63,19 @@ private:
     float deltat = 0;                // loop time in seconds
 
     SlimeVR::Configuration::MPU9250CalibrationConfig m_Calibration;
+
+#if defined(MPU9250_USE_MAHONY) && MPU9250_USE_MAHONY
+    FusionAhrs ahrs{};
+    FusionVector G{};
+    FusionVector A{};
+    FusionVector M{};
+    FusionQuaternion dmpQuat{};
+    FusionQuaternion dmpSensorOffset{};
+#else
+    float Axyz[3]{};
+    float Gxyz[3]{};
+    float Mxyz[3]{};
+#endif
 };
 
 #endif

@@ -25,22 +25,33 @@
 #define SENSORS_BMI160SENSOR_H
 
 #include "sensor.h"
-#include "mahony.h"
 #include "magneto1.4.h"
 
 #include <BMI160.h>
+#include <Fusion/Fusion.h>
 
 class BMI160Sensor : public Sensor {
     public:
-        BMI160Sensor(uint8_t id, uint8_t address, float rotation) : Sensor("BMI160Sensor", IMU_BMI160, id, address, rotation){};
+        BMI160Sensor(uint8_t id, uint8_t address, float rotation) : Sensor("BMI160Sensor", IMU_BMI160, id, address, rotation){
+            this->dmpSensorOffset = FusionQuaternion{this->sensorOffset[0], this->sensorOffset[1], this->sensorOffset[2], this->sensorOffset[3]};
+            FusionAhrsInitialise(&this->ahrs);
+        };
         ~BMI160Sensor(){};
+
         void motionSetup() override final;
         void motionLoop() override final;
         void startCalibration(int calibrationType) override final;
-        void getScaledValues(float Gxyz[3], float Axyz[3]);
+        void getScaledValues();
         float getTemperature();
     private:
         BMI160 imu {};
+
+        FusionAhrs ahrs{};
+        FusionVector G{};
+        FusionVector A{};
+        FusionQuaternion dmpQuat{};
+        FusionQuaternion dmpSensorOffset{};
+
         float q[4] {1.0f, 0.0f, 0.0f, 0.0f};
         // Loop timing globals
         uint32_t now = 0, last = 0;   //micros() timers

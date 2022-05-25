@@ -125,11 +125,14 @@ void BMI160Sensor::motionLoop() {
 
     float Gxyz[3] = {0};
     float Axyz[3] = {0};
-    getScaledValues(Gxyz, Axyz);
+    this->G = {Gxyz[0], Gxyz[1], Gxyz[2]};
+    this->A = {Axyz[0], Axyz[1], Axyz[2]};
 
-    mahonyQuaternionUpdate(q, Axyz[0], Axyz[1], Axyz[2], Gxyz[0], Gxyz[1], Gxyz[2], deltat * 1.0e-6f);
-    quaternion.set(-q[2], q[1], q[3], q[0]);
-    quaternion *= sensorOffset;
+    getScaledValues();
+
+    FusionAhrsUpdateNoMagnetometer(&this->ahrs, this->G, this->A, deltat * 1.0e-6f);
+    this->dmpQuat = FusionQuaternionMultiply(FusionAhrsGetQuaternion(&this->ahrs), this->dmpSensorOffset);
+    this->quaternion.set(this->dmpQuat.element.x, this->dmpQuat.element.y, this->dmpQuat.element.z, this->dmpQuat.element.w);
 
 #if ENABLE_INSPECTION
     {
@@ -153,7 +156,7 @@ float BMI160Sensor::getTemperature()
     return (imu.getTemperature() * TEMP_STEP) + TEMP_ZERO;
 }
 
-void BMI160Sensor::getScaledValues(float Gxyz[3], float Axyz[3])
+void BMI160Sensor::getScaledValues()
 {
 #if ENABLE_INSPECTION
     {
@@ -176,24 +179,25 @@ void BMI160Sensor::getScaledValues(float Gxyz[3], float Axyz[3])
 
     // TODO: Sensitivity over temp compensation?
     // TODO: Cross-axis sensitivity compensation?
-    Gxyz[0] = ((float)gx - (m_Calibration.G_off[0] + (tempDiff * LSB_COMP_PER_TEMP_X_MAP[quant]))) * GSCALE;
-    Gxyz[1] = ((float)gy - (m_Calibration.G_off[1] + (tempDiff * LSB_COMP_PER_TEMP_Y_MAP[quant]))) * GSCALE;
-    Gxyz[2] = ((float)gz - (m_Calibration.G_off[2] + (tempDiff * LSB_COMP_PER_TEMP_Z_MAP[quant]))) * GSCALE;
+    this->G.array[0] = ((float)gx - (m_Calibration.G_off[0] + (tempDiff * LSB_COMP_PER_TEMP_X_MAP[quant]))) * GSCALE;
+    this->G.array[1] = ((float)gy - (m_Calibration.G_off[1] + (tempDiff * LSB_COMP_PER_TEMP_Y_MAP[quant]))) * GSCALE;
+    this->G.array[2] = ((float)gz - (m_Calibration.G_off[2] + (tempDiff * LSB_COMP_PER_TEMP_Z_MAP[quant]))) * GSCALE;
 
-    Axyz[0] = (float)ax;
-    Axyz[1] = (float)ay;
-    Axyz[2] = (float)az;
+    this->A.array[0] = (float)ax;
+    this->A.array[1] = (float)ay;
+    this->A.array[2] = (float)az;
+
     //apply offsets (bias) and scale factors from Magneto
     #if useFullCalibrationMatrix == true
         float temp[3];
         for (uint8_t i = 0; i < 3; i++)
-            temp[i] = (Axyz[i] - m_Calibration.A_B[i]);
-        Axyz[0] = m_Calibration.A_Ainv[0][0] * temp[0] + m_Calibration.A_Ainv[0][1] * temp[1] + m_Calibration.A_Ainv[0][2] * temp[2];
-        Axyz[1] = m_Calibration.A_Ainv[1][0] * temp[0] + m_Calibration.A_Ainv[1][1] * temp[1] + m_Calibration.A_Ainv[1][2] * temp[2];
-        Axyz[2] = m_Calibration.A_Ainv[2][0] * temp[0] + m_Calibration.A_Ainv[2][1] * temp[1] + m_Calibration.A_Ainv[2][2] * temp[2];
+            temp[i] = (this->A.array[i] - m_Calibration.A_B[i]);
+        this->A.array[0] = m_Calibration.A_Ainv[0][0] * temp[0] + m_Calibration.A_Ainv[0][1] * temp[1] + m_Calibration.A_Ainv[0][2] * temp[2];
+        this->A.array[1] = m_Calibration.A_Ainv[1][0] * temp[0] + m_Calibration.A_Ainv[1][1] * temp[1] + m_Calibration.A_Ainv[1][2] * temp[2];
+        this->A.array[2] = m_Calibration.A_Ainv[2][0] * temp[0] + m_Calibration.A_Ainv[2][1] * temp[1] + m_Calibration.A_Ainv[2][2] * temp[2];
     #else
         for (uint8_t i = 0; i < 3; i++)
-            Axyz[i] = (Axyz[i] - calibration->A_B[i]);
+            this->A.array[i] = (this->A.array[i] - calibration->A_B[i]);
     #endif
 }
 

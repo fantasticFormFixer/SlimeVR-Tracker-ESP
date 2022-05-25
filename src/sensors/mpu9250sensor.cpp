@@ -31,6 +31,7 @@
 #if !(defined(MPU9250_USE_MAHONY) && MPU9250_USE_MAHONY)
     #include "dmpmag.h"
 #else
+#define ACC_SCALE 16384 // For 2G
 constexpr float gscale = (250. / 32768.0) * (PI / 180.0); //gyro default 250 LSB per d/s -> rad/s
 #endif
 
@@ -51,7 +52,7 @@ void MPU9250Sensor::motionSetup() {
     // turn on while flip back to calibrate. then, flip again after 5 seconds.
     // TODO: Move calibration invoke after calibrate button on slimeVR server available
     imu.getAcceleration(&ax, &ay, &az);
-    float g_az = (float)az / 16384; // For 2G sensitivity
+    float g_az = (float)az / ACC_SCALE; // For 2G sensitivity
     if(g_az < -0.75f) {
         ledManager.on();
         m_Logger.info("Flip front to confirm start calibration");
@@ -59,7 +60,7 @@ void MPU9250Sensor::motionSetup() {
         ledManager.off();
 
         imu.getAcceleration(&ax, &ay, &az);
-        g_az = (float)az / 16384;
+        g_az = (float)az / ACC_SCALE;
         if(g_az > 0.75f) {
             m_Logger.debug("Starting calibration...");
             startCalibration(0);
@@ -195,42 +196,37 @@ void MPU9250Sensor::motionLoop() {
 
 void MPU9250Sensor::getMPUScaled()
 {
-    // float temp[3];
-    // int i;
+    int i = 0;
+    float temp[3];
 
 #if defined(MPU9250_USE_MAHONY) && MPU9250_USE_MAHONY
     int16_t ax, ay, az, gx, gy, gz, mx, my, mz;
 
-    // imu.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);
+    imu.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);
 
-    imu.getRotation(&gx, &gy, &gz);
-    imu.getAcceleration(&ax, &ay, &az);
-    imu.getMagnetometer(&mx, &my, &mz);
-
-    this->G.array[0] = (float)gx;
-    this->G.array[1] = (float)gy;
-    this->G.array[2] = (float)gz;
-
-    // this->G.array[0] = ((float)gx - this->m_Calibration.G_off[0]) * gscale; //250 LSB(d/s) default to radians/s
-    // this->G.array[1] = ((float)gy - this->m_Calibration.G_off[1]) * gscale;
-    // this->G.array[2] = ((float)gz - this->m_Calibration.G_off[2]) * gscale;
+    this->G.array[0] = ((float)gx - this->m_Calibration.G_off[0]) * gscale; //250 LSB(d/s) default to radians/s
+    this->G.array[1] = ((float)gy - this->m_Calibration.G_off[1]) * gscale;
+    this->G.array[2] = ((float)gz - this->m_Calibration.G_off[2]) * gscale;
 
     this->A.array[0] = (float)ax;
     this->A.array[1] = (float)ay;
     this->A.array[2] = (float)az;
-
     //apply offsets (bias) and scale factors from Magneto
-    // #if useFullCalibrationMatrix == true
-    //     for (i = 0; i < 3; i++)
-    //         temp[i] = (this->A.array[i] - this->m_Calibration.A_B[i]);
-    //     this->A.array[0] = this->m_Calibration.A_Ainv[0][0] * temp[0] + this->m_Calibration.A_Ainv[0][1] * temp[1] + this->m_Calibration.A_Ainv[0][2] * temp[2];
-    //     this->A.array[1] = this->m_Calibration.A_Ainv[1][0] * temp[0] + this->m_Calibration.A_Ainv[1][1] * temp[1] + this->m_Calibration.A_Ainv[1][2] * temp[2];
-    //     this->A.array[2] = this->m_Calibration.A_Ainv[2][0] * temp[0] + this->m_Calibration.A_Ainv[2][1] * temp[1] + this->m_Calibration.A_Ainv[2][2] * temp[2];
-    // #else
-    //     for (i = 0; i < 3; i++)
-    //         this->A.array[i] = (this->A.array[i] - this->m-Calibration.A_B[i]);
-    // #endif
-
+    #if useFullCalibrationMatrix == true
+        for (i = 0; i < 3; i++)
+            temp[i] = (this->A.array[i] - this->m_Calibration.A_B[i]);
+        this->A.array[0] = (this->m_Calibration.A_Ainv[0][0] * temp[0] + this->m_Calibration.A_Ainv[0][1] * temp[1] + this->m_Calibration.A_Ainv[0][2] * temp[2]) / ACC_SCALE;
+        this->A.array[1] = (this->m_Calibration.A_Ainv[1][0] * temp[0] + this->m_Calibration.A_Ainv[1][1] * temp[1] + this->m_Calibration.A_Ainv[1][2] * temp[2]) / ACC_SCALE;
+        this->A.array[2] = (this->m_Calibration.A_Ainv[2][0] * temp[0] + this->m_Calibration.A_Ainv[2][1] * temp[1] + this->m_Calibration.A_Ainv[2][2] * temp[2]) / ACC_SCALE;
+    #else
+        for (i = 0; i < 3; i++)
+            this->A.array[i] = (this->A.array[i] - this->m-Calibration.A_B[i]) / ACC_SCALE;
+    #endif
+#else
+    int16_t mx, my, mz;
+    // with DMP, we just need mag data
+    imu.getMagnetometer(&mx, &my, &mz);
+#endif
     // Orientations of axes are set in accordance with the datasheet
     // See Section 9.1 Orientation of Axes
     // https://invensense.tdk.com/wp-content/uploads/2015/02/PS-MPU-9250A-01-v1.1.pdf
@@ -238,39 +234,16 @@ void MPU9250Sensor::getMPUScaled()
     this->M.array[1] = (float)mx;
     this->M.array[2] = -(float)mz;
     //apply offsets and scale factors from Magneto
-    // #if useFullCalibrationMatrix == true
-    //     for (i = 0; i < 3; i++)
-    //         temp[i] = (this->M.array[i] - this->m_Calibration.M_B[i]);
-    //     this->M.array[0] = this->m_Calibration.M_Ainv[0][0] * temp[0] + this->m_Calibration.M_Ainv[0][1] * temp[1] + this->m_Calibration.M_Ainv[0][2] * temp[2];
-    //     this->M.array[1] = this->m_Calibration.M_Ainv[1][0] * temp[0] + this->m_Calibration.M_Ainv[1][1] * temp[1] + this->m_Calibration.M_Ainv[1][2] * temp[2];
-    //     this->M.array[2] = this->m_Calibration.M_Ainv[2][0] * temp[0] + this->m_Calibration.M_Ainv[2][1] * temp[1] + this->m_Calibration.M_Ainv[2][2] * temp[2];
-    // #else
-    //     for (i = 0; i < 3; i++)
-    //         this->M.array[i] = (this->M.array[i] - this->m_Calibration.M_B[i]);
-    // #endif
-#else
-    int16_t mx, my, mz;
-    // with DMP, we just need mag data
-    imu.getMagnetometer(&mx, &my, &mz);
-
-    // Orientations of axes are set in accordance with the datasheet
-    // See Section 9.1 Orientation of Axes
-    // https://invensense.tdk.com/wp-content/uploads/2015/02/PS-MPU-9250A-01-v1.1.pdf
-    Mxyz[0] = (float)my;
-    Mxyz[1] = (float)mx;
-    Mxyz[2] = -(float)mz;
-    //apply offsets and scale factors from Magneto
     #if useFullCalibrationMatrix == true
         for (i = 0; i < 3; i++)
-            temp[i] = (Mxyz[i] - m_Calibration.M_B[i]);
-        Mxyz[0] = m_Calibration.M_Ainv[0][0] * temp[0] + m_Calibration.M_Ainv[0][1] * temp[1] + m_Calibration.M_Ainv[0][2] * temp[2];
-        Mxyz[1] = m_Calibration.M_Ainv[1][0] * temp[0] + m_Calibration.M_Ainv[1][1] * temp[1] + m_Calibration.M_Ainv[1][2] * temp[2];
-        Mxyz[2] = m_Calibration.M_Ainv[2][0] * temp[0] + m_Calibration.M_Ainv[2][1] * temp[1] + m_Calibration.M_Ainv[2][2] * temp[2];
+             temp[i] = (this->M.array[i] - this->m_Calibration.M_B[i]);
+        this->M.array[0] = this->m_Calibration.M_Ainv[0][0] * temp[0] + this->m_Calibration.M_Ainv[0][1] * temp[1] + this->m_Calibration.M_Ainv[0][2] * temp[2];
+        this->M.array[1] = this->m_Calibration.M_Ainv[1][0] * temp[0] + this->m_Calibration.M_Ainv[1][1] * temp[1] + this->m_Calibration.M_Ainv[1][2] * temp[2];
+        this->M.array[2] = this->m_Calibration.M_Ainv[2][0] * temp[0] + this->m_Calibration.M_Ainv[2][1] * temp[1] + this->m_Calibration.M_Ainv[2][2] * temp[2];
     #else
         for (i = 0; i < 3; i++)
-            Mxyz[i] = (Mxyz[i] - m_Calibration.M_B[i]);
+            this->M.array[i] = (this->M.array[i] - this->m_Calibration.M_B[i]);
     #endif
-#endif
 }
 
 void MPU9250Sensor::startCalibration(int calibrationType) {
@@ -287,8 +260,8 @@ void MPU9250Sensor::startCalibration(int calibrationType) {
     delay(2000);
     for (int i = 0; i < calibrationSamples; i++)
     {
-        int16_t ax,ay,az,gx,gy,gz,mx,my,mz;
-        imu.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);
+        int16_t gx,gy,gz;
+        imu.getRotation(&gx, &gy, &gz);
         this->G.array[0] += float(gx);
         this->G.array[1] += float(gy);
         this->G.array[2] += float(gz);

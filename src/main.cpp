@@ -21,7 +21,6 @@
     THE SOFTWARE.
 */
 
-#include "Wire.h"
 #include "ota.h"
 #include "sensors/SensorManager.h"
 #include "configuration/Configuration.h"
@@ -34,6 +33,12 @@
 #include "status/StatusManager.h"
 #include "batterymonitor.h"
 #include "logging/Logger.h"
+
+#if COMMUNICATION == I2C_MODE
+#include "Wire.h"
+#elif COMMUNICATION == SPI_MODE
+#include "SPI.h"
+#endif
 
 SlimeVR::Logging::Logger logger("SlimeVR");
 SlimeVR::Sensors::SensorManager sensorManager;
@@ -66,6 +71,7 @@ void setup()
 
     SerialCommands::setUp();
 
+#if COMMUNICATION == I2C_MODE
 #if IMU == IMU_MPU6500 || IMU == IMU_MPU6050 || IMU == IMU_MPU9250
     I2CSCAN::clearBus(PIN_IMU_SDA, PIN_IMU_SCL); // Make sure the bus isn't stuck when resetting ESP without powering it down
     // Do it only for MPU, cause reaction of BNO to this is not investigated yet
@@ -76,6 +82,12 @@ void setup()
     Wire.setClockStretchLimit(150000L); // Default stretch limit 150mS
 #endif
     Wire.setClock(I2C_SPEED);
+#elif COMMUNICATION == SPI_MODE
+    pinMode(PIN_IMU_NCS, OUTPUT);
+    digitalWrite(PIN_IMU_NCS, HIGH);
+    SPI.pins(PIN_IMU_SCLK, PIN_IMU_MISO, PIN_IMU_MOSI, PIN_IMU_NCS);
+    SPI.begin();
+#endif
 
     // Wait for IMU to boot
     delay(500);

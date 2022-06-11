@@ -104,23 +104,23 @@ boolean BNO080::beginSPI(uint8_t user_CSPin, uint8_t user_WAKPin, uint8_t user_I
 	//Get user settings
 	_spiPort = &spiPort;
 	_spiPortSpeed = spiPortSpeed;
-	if (_spiPortSpeed > 3000000)
-		_spiPortSpeed = 3000000; //BNO080 max is 3MHz
+	//if (_spiPortSpeed > 3000000)
+	//	_spiPortSpeed = 3000000; //BNO080 max is 3MHz
 
 	_cs = user_CSPin;
-	_wake = user_WAKPin;
+	//_wake = user_WAKPin;
 	_int = user_INTPin;
 	_rst = user_RSTPin;
 
 	pinMode(_cs, OUTPUT);
-	pinMode(_wake, OUTPUT);
+	//pinMode(_wake, OUTPUT);
 	pinMode(_int, INPUT_PULLUP);
 	pinMode(_rst, OUTPUT);
 
 	digitalWrite(_cs, HIGH); //Deselect BNO080
 
 	//Configure the BNO080 for SPI communication
-	digitalWrite(_wake, HIGH); //Before boot up the PS0/WAK pin must be high to enter SPI mode
+	//digitalWrite(_wake, HIGH); //Before boot up the PS0/WAK pin must be high to enter SPI mode
 	digitalWrite(_rst, LOW);   //Reset BNO080
 	delay(2);				   //Min length not specified in datasheet?
 	digitalWrite(_rst, HIGH);  //Bring out of reset

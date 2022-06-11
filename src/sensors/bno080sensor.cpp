@@ -31,11 +31,19 @@ void BNO080Sensor::motionSetup()
 #ifdef DEBUG_SENSOR
     imu.enableDebugging(Serial);
 #endif
+#if COMMUNICATION == I2C_MODE
     if(!imu.begin(addr, Wire, m_IntPin)) {
         m_Logger.fatal("Can't connect to %s at address 0x%02x", getIMUNameByType(sensorType), addr);
         ledManager.pattern(50, 50, 200);
         return;
     }
+#elif COMMUNICATION == SPI_MODE
+    if(!imu.beginSPI(PIN_IMU_NCS, 0, PIN_IMU_INT, PIN_IMU_RST, SPI_DATA_SPEED, SPI)) {
+        m_Logger.fatal("Can't connect to %s via SPI", getIMUNameByType(sensorType));
+        ledManager.pattern(50, 50, 200);
+        return;
+    }
+#endif
 
     m_Logger.info("Connected to %s on 0x%02x. "
                   "Info: SW Version Major: 0x%02x "

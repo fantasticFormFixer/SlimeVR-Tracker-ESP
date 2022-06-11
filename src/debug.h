@@ -25,6 +25,11 @@
 #include "consts.h"
 #include "logging/Level.h"
 
+#define I2C_MODE 0
+#define SPI_MODE 1
+
+#define COMMUNICATION SPI_MODE
+
 #define IMU_MPU6050_RUNTIME_CALIBRATION // Comment to revert to startup/traditional-calibration
 #define BNO_USE_ARVR_STABILIZATION // Comment to not use stabilization for BNO085+ IMUs
 #define USE_6_AXIS true // uses 9 (with mag) if false (only for ICM-20948 currently)
@@ -70,7 +75,12 @@
 // Experimental
 #define OPTIMIZE_UPDATES true
 
+#if COMMUNICATION == I2C_MODE
 #define I2C_SPEED 400000
+#elif COMMUNICATION == SPI_MODE
+#define SPI_SETUP_SPEED 1000000UL
+#define SPI_DATA_SPEED 20000000UL
+#endif
 
 // Send inspection packets over the network to a profiler
 // Not recommended for production

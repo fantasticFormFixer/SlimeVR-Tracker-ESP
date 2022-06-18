@@ -85,8 +85,12 @@ void setup()
 #elif COMMUNICATION == SPI_MODE
     pinMode(PIN_IMU_NCS, OUTPUT);
     digitalWrite(PIN_IMU_NCS, HIGH);
+    #ifdef ESP8266
     SPI.pins(PIN_IMU_SCLK, PIN_IMU_MISO, PIN_IMU_MOSI, PIN_IMU_NCS);
     SPI.begin();
+    #elif defined(ESP32)
+    SPI.begin(PIN_IMU_SCLK, PIN_IMU_MISO, PIN_IMU_MOSI, PIN_IMU_NCS);
+    #endif
 #endif
 
     // Wait for IMU to boot

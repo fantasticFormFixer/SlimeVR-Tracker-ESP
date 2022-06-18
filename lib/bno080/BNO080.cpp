@@ -104,8 +104,8 @@ boolean BNO080::beginSPI(uint8_t user_CSPin, uint8_t user_WAKPin, uint8_t user_I
 	//Get user settings
 	_spiPort = &spiPort;
 	_spiPortSpeed = spiPortSpeed;
-	//if (_spiPortSpeed > 3000000)
-	//	_spiPortSpeed = 3000000; //BNO080 max is 3MHz
+	if (_spiPortSpeed > 3000000)
+		_spiPortSpeed = 3000000; //BNO080 max is 3MHz
 
 	_cs = user_CSPin;
 	//_wake = user_WAKPin;

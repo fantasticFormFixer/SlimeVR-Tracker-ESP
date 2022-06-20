@@ -33,28 +33,6 @@
 // Scale conversion steps: LSB/°/s -> °/s -> step/°/s -> step/rad/s
 constexpr float GSCALE = ((32768. / TYPICAL_SENSITIVITY_LSB) / 32768.) * (PI / 180.0);
 
-// LSB change per temperature step map.
-// These values were calculated for 500 deg/s sensitivity
-// Step quantization - 5 degrees per step
-const float LSB_COMP_PER_TEMP_X_MAP[13] = {
-    0.77888f, 1.01376f, 0.83848f, 0.39416f,             // 15, 20, 25, 30
-    -0.08792f, -0.01576f, -0.1018f, 0.22208f,           // 35, 40, 45, 50
-    0.22208f, 0.22208f, 0.22208f, 0.2316f,              // 55, 60, 65, 70
-    0.53416f                                            // 75
-};
-const float LSB_COMP_PER_TEMP_Y_MAP[13] = {
-    0.10936f, 0.24392f, 0.28816f, 0.24096f,
-    0.05376f, -0.1464f, -0.22664f, -0.23864f,
-    -0.25064f, -0.26592f, -0.28064f, -0.30224f,
-    -0.31608f
-};
-const float LSB_COMP_PER_TEMP_Z_MAP[13] = {
-    0.15136f, 0.04472f, 0.02528f, -0.07056f,
-    0.03184f, -0.002f, -0.03888f, -0.14f,
-    -0.14488f, -0.14976f, -0.15656f, -0.16108f,
-    -0.1656f
-};
-
 void BMI160Sensor::motionSetup() {
     // initialize device
     imu.initialize(addr);
@@ -165,10 +143,6 @@ void BMI160Sensor::getScaledValues(float Gxyz[3], float Axyz[3])
     }
 #endif
 
-    float temperature = getTemperature();
-    float tempDiff = temperature - m_Calibration.temperature;
-    uint8_t quant = map(temperature, 15, 75, 0, 12);
-
     int16_t ax, ay, az;
     int16_t gx, gy, gz;
     // TODO: Read from FIFO?
@@ -176,9 +150,9 @@ void BMI160Sensor::getScaledValues(float Gxyz[3], float Axyz[3])
 
     // TODO: Sensitivity over temp compensation?
     // TODO: Cross-axis sensitivity compensation?
-    Gxyz[0] = ((float)gx - (m_Calibration.G_off[0] + (tempDiff * LSB_COMP_PER_TEMP_X_MAP[quant]))) * GSCALE;
-    Gxyz[1] = ((float)gy - (m_Calibration.G_off[1] + (tempDiff * LSB_COMP_PER_TEMP_Y_MAP[quant]))) * GSCALE;
-    Gxyz[2] = ((float)gz - (m_Calibration.G_off[2] + (tempDiff * LSB_COMP_PER_TEMP_Z_MAP[quant]))) * GSCALE;
+    Gxyz[0] = ((float)gx - m_Calibration.G_off[0]) * GSCALE;
+    Gxyz[1] = ((float)gy - m_Calibration.G_off[1]) * GSCALE;
+    Gxyz[2] = ((float)gz - m_Calibration.G_off[2]) * GSCALE;
 
     Axyz[0] = (float)ax;
     Axyz[1] = (float)ay;

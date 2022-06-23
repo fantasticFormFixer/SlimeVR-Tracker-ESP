@@ -83,8 +83,6 @@ void setup()
 #endif
     Wire.setClock(I2C_SPEED);
 #elif COMMUNICATION == SPI_MODE
-    pinMode(PIN_IMU_NCS, OUTPUT);
-    digitalWrite(PIN_IMU_NCS, HIGH);
     #ifdef ESP8266
     SPI.pins(PIN_IMU_SCLK, PIN_IMU_MISO, PIN_IMU_MOSI, PIN_IMU_NCS);
     SPI.begin();

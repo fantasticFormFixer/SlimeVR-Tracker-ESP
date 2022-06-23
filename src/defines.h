@@ -25,6 +25,7 @@
 // https://docs.slimevr.dev/firmware/configuring-project.html#2-configuring-definesh
 // ================================================
 
+
 // Set parameters of IMU and board used
 #define IMU IMU_BNO085
 #define SECOND_IMU IMU
@@ -79,14 +80,16 @@
 #elif BOARD == BOARD_NODEMCU || BOARD == BOARD_WEMOSD1MINI
   #define PIN_IMU_SDA D2
   #define PIN_IMU_SCL D1
-  #define PIN_IMU_INT D5
-  #define PIN_IMU_INT_2 D6
-  #define PIN_BATTERY_LEVEL A0
   #define PIN_IMU_MISO D6
   #define PIN_IMU_MOSI D7
   #define PIN_IMU_SCLK D5
   #define PIN_IMU_NCS D1
+  #define PIN_IMU_NCS_2 D8
   #define PIN_IMU_RST D2
+  #define PIN_IMU_RST_2 D2
+  #define PIN_IMU_INT D5
+  #define PIN_IMU_INT_2 D6
+  #define PIN_BATTERY_LEVEL A0
 //  #define LED_PIN 2
 //  #define LED_INVERTED true
 #elif BOARD == BOARD_ESP01
@@ -110,13 +113,16 @@
 #elif BOARD == BOARD_WROOM32
   #define PIN_IMU_SDA 21
   #define PIN_IMU_SCL 22
-  #define PIN_IMU_INT 23
-  #define PIN_IMU_INT_2 25
-  #define PIN_BATTERY_LEVEL 36
   #define PIN_IMU_MISO 12
   #define PIN_IMU_MOSI 13
   #define PIN_IMU_SCLK 14
   #define PIN_IMU_NCS 22
+  #define PIN_IMU_NCS_2 24
+  #define PIN_IMU_RST 26
+  #define PIN_IMU_RST_2 26
+  #define PIN_IMU_INT 23
+  #define PIN_IMU_INT_2 25
+  #define PIN_BATTERY_LEVEL 36
 //  #define LED_PIN 2
 //  #define LED_INVERTED false
 #endif

@@ -38,11 +38,11 @@ namespace SlimeVR
     {
         void SensorManager::setup()
         {
+#if COMMUNICATION == I2C_MODE
             uint8_t firstIMUAddress = 0;
             uint8_t secondIMUAddress = 0;
 
             {
-#if COMMUNICATION == I2C_MODE
 #if IMU == IMU_BNO080 || IMU == IMU_BNO085 || IMU == IMU_BNO086
                 firstIMUAddress = I2CSCAN::pickDevice(0x4A, 0x4B, true);
 #elif IMU == IMU_BNO055
@@ -75,14 +75,9 @@ namespace SlimeVR
                     m_Sensor1 = new ICM20948Sensor(0, firstIMUAddress, IMU_ROTATION);
 #endif
                 }
-#elif COMMUNICATION == SPI_MODE
-                m_Sensor1 = new BNO080Sensor(0, IMU, firstIMUAddress, IMU_ROTATION, PIN_IMU_INT);
-#endif
-                m_Sensor1->motionSetup();
             }
 
             {
-#if COMMUNICATION == I2C_MODE
 #if SECOND_IMU == IMU_BNO080 || SECOND_IMU == IMU_BNO085 || SECOND_IMU == IMU_BNO086
                 secondIMUAddress = I2CSCAN::pickDevice(0x4B, 0x4A, false);
 #elif SECOND_IMU == IMU_BNO055
@@ -119,12 +114,17 @@ namespace SlimeVR
                     m_Sensor2 = new ICM20948Sensor(1, secondIMUAddress, SECOND_IMU_ROTATION);
 #endif
                 }
-#elif COMMUNICATION == SPI_MODE
-                m_Sensor2 = new ErroneousSensor(1, SECOND_IMU);
+            }
 #endif
 
+#if COMMUNICATION == SPI_MODE
+            {
+                m_Sensor1 = new BNO080Sensor(0, IMU, 0x00, IMU_ROTATION, PIN_IMU_INT, PIN_IMU_NCS, 255, PIN_IMU_RST);
+                m_Sensor1->motionSetup();
+                m_Sensor2 = new BNO080Sensor(1, SECOND_IMU, 0x00, SECOND_IMU_ROTATION, PIN_IMU_INT_2, PIN_IMU_NCS_2, 255, PIN_IMU_RST_2);
                 m_Sensor2->motionSetup();
             }
+#endif
         }
 
         void SensorManager::postSetup()

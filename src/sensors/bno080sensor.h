@@ -32,6 +32,8 @@ class BNO080Sensor : public Sensor
 public:
     BNO080Sensor(uint8_t id, uint8_t type, uint8_t address, float rotation, uint8_t intPin)
         : Sensor("BNO080Sensor", type, id, address, rotation), m_IntPin(intPin) {};
+    BNO080Sensor(uint8_t id, uint8_t type, uint8_t address, float rotation, uint8_t intPin, uint8_t ncsPin, uint8_t wakePin, uint8_t rstPin)
+        : Sensor("BNO080Sensor", type, id, address, rotation), m_IntPin(intPin), m_WakePin(wakePin), m_NcsPin(ncsPin), m_RstPin(rstPin) {};
     ~BNO080Sensor(){};
     void motionSetup() override final;
     void postSetup() override {
@@ -45,8 +47,12 @@ public:
 
 private:
     BNO080 imu{};
+    SPIClass spi;
 
     uint8_t m_IntPin;
+    uint8_t m_NcsPin;
+    uint8_t m_WakePin;
+    uint8_t m_RstPin;
 
     uint8_t tap;
     unsigned long lastData = 0;

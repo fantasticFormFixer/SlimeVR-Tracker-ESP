@@ -38,7 +38,7 @@ void BNO080Sensor::motionSetup()
         return;
     }
 #elif COMMUNICATION == SPI_MODE
-    if(!imu.beginSPI(PIN_IMU_NCS, 0, PIN_IMU_INT, PIN_IMU_RST, SPI_DATA_SPEED, SPI)) {
+    if(!imu.beginSPI(m_NcsPin, m_WakePin, m_IntPin, m_RstPin, SPI_DATA_SPEED, spi)) {
         m_Logger.fatal("Can't connect to %s via SPI", getIMUNameByType(sensorType));
         ledManager.pattern(50, 50, 200);
         return;

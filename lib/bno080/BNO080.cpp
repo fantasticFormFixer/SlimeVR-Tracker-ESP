@@ -72,11 +72,11 @@ boolean BNO080::begin(uint8_t deviceAddress, TwoWire &wirePort, uint8_t intPin)
 	{
 		if (shtpData[0] == SHTP_REPORT_PRODUCT_ID_RESPONSE)
 		{
-				swMajor = shtpData[2];
-				swMinor = shtpData[3];
-				swPartNumber = ((uint32_t)shtpData[7] << 24) | ((uint32_t)shtpData[6] << 16) | ((uint32_t)shtpData[5] << 8) | ((uint32_t)shtpData[4]);
-				swBuildNumber = ((uint32_t)shtpData[11] << 24) | ((uint32_t)shtpData[10] << 16) | ((uint32_t)shtpData[9] << 8) | ((uint32_t)shtpData[8]);
-				swVersionPatch = ((uint16_t)shtpData[13] << 8) | ((uint16_t)shtpData[12]);
+			swMajor = shtpData[2];
+			swMinor = shtpData[3];
+			swPartNumber = ((uint32_t)shtpData[7] << 24) | ((uint32_t)shtpData[6] << 16) | ((uint32_t)shtpData[5] << 8) | ((uint32_t)shtpData[4]);
+			swBuildNumber = ((uint32_t)shtpData[11] << 24) | ((uint32_t)shtpData[10] << 16) | ((uint32_t)shtpData[9] << 8) | ((uint32_t)shtpData[8]);
+			swVersionPatch = ((uint16_t)shtpData[13] << 8) | ((uint16_t)shtpData[12]);
 			if (_printDebug == true)
 			{
 				_debugPort->print(F("SW Version Major: 0x"));
@@ -108,19 +108,22 @@ boolean BNO080::beginSPI(uint8_t user_CSPin, uint8_t user_WAKPin, uint8_t user_I
 		_spiPortSpeed = 3000000; //BNO080 max is 3MHz
 
 	_cs = user_CSPin;
-	//_wake = user_WAKPin;
+	_wake = user_WAKPin;
 	_int = user_INTPin;
 	_rst = user_RSTPin;
 
 	pinMode(_cs, OUTPUT);
-	//pinMode(_wake, OUTPUT);
+	if (_wake != 255)
+		pinMode(_wake, OUTPUT);
 	pinMode(_int, INPUT_PULLUP);
 	pinMode(_rst, OUTPUT);
 
 	digitalWrite(_cs, HIGH); //Deselect BNO080
 
 	//Configure the BNO080 for SPI communication
-	//digitalWrite(_wake, HIGH); //Before boot up the PS0/WAK pin must be high to enter SPI mode
+	if (_wake != 255)
+		digitalWrite(_wake, HIGH); //Before boot up the PS0/WAK pin must be high to enter SPI mode
+
 	digitalWrite(_rst, LOW);   //Reset BNO080
 	delay(2);				   //Min length not specified in datasheet?
 	digitalWrite(_rst, HIGH);  //Bring out of reset
@@ -131,7 +134,7 @@ boolean BNO080::beginSPI(uint8_t user_CSPin, uint8_t user_WAKPin, uint8_t user_I
 	//if(wakeBNO080() == false) //Bring IC out of sleep after reset
 	//  Serial.println("BNO080 did not wake up");
 
-	_spiPort->begin(); //Turn on SPI hardware
+	// _spiPort->begin(); //Turn on SPI hardware
 
 	//At system startup, the hub must send its full advertisement message (see 5.2 and 5.3) to the
 	//host. It must not send any other data until this step is complete.
@@ -1514,6 +1517,8 @@ boolean BNO080::receivePacket(void)
 		{
 			//Packet is empty
 			printHeader();
+			digitalWrite(_cs, HIGH); //Release BNO080
+			_spiPort->endTransaction();
 			return (false); //All done
 		}
 		dataLength -= 4; //Remove the header bytes from the data count

@@ -238,8 +238,8 @@ void MPU9250Sensor::getMPUScaled()
     // See Section 9.1 Orientation of Axes
     // https://invensense.tdk.com/wp-content/uploads/2015/02/PS-MPU-9250A-01-v1.1.pdf
     Mxyz[0] = (float)my;
-    Mxyz[1] = (float)mx;
-    Mxyz[2] = -(float)mz;
+    Mxyz[1] = -(float)mx;
+    Mxyz[2] = (float)mz;
     //apply offsets and scale factors from Magneto
     #if useFullCalibrationMatrix == true
         for (i = 0; i < 3; i++)
@@ -268,8 +268,8 @@ void MPU9250Sensor::startCalibration(int calibrationType) {
         int16_t mx,my,mz;
         imu.getMagnetometer(&mx, &my, &mz);
         calibrationDataMag[i * 3 + 0] = my;
-        calibrationDataMag[i * 3 + 1] = mx;
-        calibrationDataMag[i * 3 + 2] = -mz;
+        calibrationDataMag[i * 3 + 1] = -mx;
+        calibrationDataMag[i * 3 + 2] = mz;
         Network::sendRawCalibrationData(calibrationDataMag, CALIBRATION_TYPE_EXTERNAL_MAG, 0);
         ledManager.off();
         delay(250);
@@ -337,8 +337,8 @@ void MPU9250Sensor::startCalibration(int calibrationType) {
         calibrationDataAcc[i * 3 + 1] = ay;
         calibrationDataAcc[i * 3 + 2] = az;
         calibrationDataMag[i * 3 + 0] = my;
-        calibrationDataMag[i * 3 + 1] = mx;
-        calibrationDataMag[i * 3 + 2] = -mz;
+        calibrationDataMag[i * 3 + 1] = -mx;
+        calibrationDataMag[i * 3 + 2] = mz;
         Network::sendRawCalibrationData(calibrationDataAcc, CALIBRATION_TYPE_EXTERNAL_ACCEL, 0);
         Network::sendRawCalibrationData(calibrationDataMag, CALIBRATION_TYPE_EXTERNAL_MAG, 0);
         ledManager.off();

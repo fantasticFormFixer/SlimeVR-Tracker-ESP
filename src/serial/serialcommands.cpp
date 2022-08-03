@@ -97,7 +97,7 @@ namespace SerialCommands {
                 IMU_ROTATION,
                 SECOND_IMU_ROTATION,
                 BATTERY_MONITOR,
-                BATTERY_SHIELD_RESISTANCE,
+                //BATTERY_SHIELD_RESISTANCE,
                 BATTERY_SHIELD_R1,
                 BATTERY_SHIELD_R2,
                 PIN_IMU_SDA,

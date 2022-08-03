@@ -29,8 +29,8 @@
 #define IMU IMU_MPU9250
 #define SECOND_IMU IMU_MPU9250
 #define BOARD BOARD_WEMOSD1MINI
-#define IMU_ROTATION DEG_180
-#define SECOND_IMU_ROTATION DEG_180
+#define IMU_ROTATION DEG_270
+#define SECOND_IMU_ROTATION DEG_270
 
 // Battery monitoring options (comment to disable):
 //   BAT_EXTERNAL for ADC pin, 

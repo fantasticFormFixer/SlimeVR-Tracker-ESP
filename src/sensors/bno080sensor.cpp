@@ -186,6 +186,10 @@ void BNO080Sensor::motionLoop() {
 			Vector3 nAccel;
 			imu.getLinAccel(nAccel.x, nAccel.y, nAccel.z, acc);
 			setAcceleration(nAccel);
+			m_Logger.info("%d,%f,%f,%f,%f,%f,%f,%f",
+        	sensorId, fusedRotation.w, fusedRotation.x, fusedRotation.y, fusedRotation.z, this->acceleration[0], this->acceleration[1], this->acceleration[2]
+
+    	);
 		}
 #endif  // SEND_ACCELERATION
 

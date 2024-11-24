@@ -185,22 +185,20 @@ PIN_IMU_SDA, PRIMARY_IMU_OPTIONAL, BMI160_QMC_REMAP) \
 #define LED_PIN 7
 //  #define LED_INVERTED false
 #elif BOARD == BOARD_BEETLE32C3
-#define PIN_IMU_SDA 8
-#define PIN_IMU_SCL 9
-#define PIN_IMU_INT 6
-#define PIN_IMU_INT_2 7
-#define PIN_BATTERY_LEVEL 3
-#define LED_PIN 10
-#define LED_INVERTED false
-#elif BOARD == BOARD_ES32C3DEVKITM1
-#define PIN_IMU_SDA 5
-#define PIN_IMU_SCL 4
-#define PIN_IMU_INT 6
-#define PIN_IMU_INT_2 7
-#define PIN_BATTERY_LEVEL 3
-#define LED_PIN \
-	LED_OFF  // RGB LED Protocol would need to be implementetet did not brother for the
-			 // test, because the board ideal for tracker ifself
+  #define PIN_IMU_SDA 8
+  #define PIN_IMU_SCL 9
+  #define PIN_IMU_INT 6
+  #define PIN_IMU_INT_2 7
+  #define PIN_BATTERY_LEVEL 3
+  #define LED_PIN 10
+  #define LED_INVERTED false
+#elif BOARD == BOARD_ES32C3DEVKITM1 || BOARD == BOARD_ES32C6DEVKITC1
+  #define PIN_IMU_SDA 5
+  #define PIN_IMU_SCL 4
+  #define PIN_IMU_INT 6
+  #define PIN_IMU_INT_2 7
+  #define PIN_BATTERY_LEVEL 3
+  #define LED_PIN LED_OFF  // RGB LED Protocol would need to be implementetet did not brother for the test, because the board ideal for tracker ifself
 //  #define LED_INVERTED false
 #elif BOARD == BOARD_WEMOSWROOM02
 #define PIN_IMU_SDA 2

@@ -100,22 +100,26 @@ PIN_IMU_SDA, PRIMARY_IMU_OPTIONAL, BMI160_QMC_REMAP) \
 
 // Board-specific configurations
 #if BOARD == BOARD_SLIMEVR
-#define PIN_IMU_SDA 14
-#define PIN_IMU_SCL 12
-#define PIN_IMU_INT 16
-#define PIN_IMU_INT_2 13
-#define PIN_BATTERY_LEVEL 17
-#define LED_PIN 2
-#define LED_INVERTED true
-#ifndef BATTERY_SHIELD_RESISTANCE
-#define BATTERY_SHIELD_RESISTANCE 0
-#endif
-#ifndef BATTERY_SHIELD_R1
-#define BATTERY_SHIELD_R1 10
-#endif
-#ifndef BATTERY_SHIELD_R2
-#define BATTERY_SHIELD_R2 40.2
-#endif
+  #define PIN_IMU_SDA 6
+  #define PIN_IMU_SCL 7
+
+  #define PIN_IMU_INT 1
+  #define PIN_IMU_INT_2 2
+
+  #define PIN_BATTERY_LEVEL 4
+
+  #define LED_PIN 18
+  #define LED_INVERTED true
+
+  #ifndef BATTERY_SHIELD_RESISTANCE
+    #define BATTERY_SHIELD_RESISTANCE 0
+  #endif
+  #ifndef BATTERY_SHIELD_R1
+    #define BATTERY_SHIELD_R1 180
+  #endif
+  #ifndef BATTERY_SHIELD_R2
+    #define BATTERY_SHIELD_R2 35
+  #endif
 #elif BOARD == BOARD_SLIMEVR_LEGACY || BOARD == BOARD_SLIMEVR_DEV
 #define PIN_IMU_SDA 4
 #define PIN_IMU_SCL 5

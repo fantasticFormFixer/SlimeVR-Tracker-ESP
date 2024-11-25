@@ -189,8 +189,8 @@ void BNO080Sensor::motionLoop() {
 			Serial.printf("csv:%d,%f,%f,%f,%f,%f,%f,%f\n",
         	sensorId, fusedRotation.w, fusedRotation.x, fusedRotation.y, fusedRotation.z, this->acceleration[0], this->acceleration[1], this->acceleration[2]
     		);
-			Serial.printf(">sensor_id:%d\n>rotation_w:%f\n>rotation_x:%f\n>rotation_y:%f\n>rotation_z:%f\n>accel_x:%f\n>accel_y:%f\n>accel_z:%f\n",
-        	sensorId, fusedRotation.w, fusedRotation.x, fusedRotation.y, fusedRotation.z, this->acceleration[0], this->acceleration[1], this->acceleration[2]
+			Serial.printf(">rotation_%d_w:%f\n>rotation_%d_x:%f\n>rotation_%d_y:%f\n>rotation_%d_z:%f\n>accel_%d_x:%f\n>accel_%d_y:%f\n>accel_%d_z:%f\n",
+        	sensorId, fusedRotation.w, sensorId, fusedRotation.x, sensorId, fusedRotation.y, sensorId, fusedRotation.z, sensorId, this->acceleration[0], sensorId, this->acceleration[1], sensorId, this->acceleration[2]
     		);
 		}
 #endif  // SEND_ACCELERATION

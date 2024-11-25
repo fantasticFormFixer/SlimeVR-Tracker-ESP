@@ -186,10 +186,12 @@ void BNO080Sensor::motionLoop() {
 			Vector3 nAccel;
 			imu.getLinAccel(nAccel.x, nAccel.y, nAccel.z, acc);
 			setAcceleration(nAccel);
-			m_Logger.info("%d,%f,%f,%f,%f,%f,%f,%f",
+			Serial.printf("csv:%d,%f,%f,%f,%f,%f,%f,%f\n",
         	sensorId, fusedRotation.w, fusedRotation.x, fusedRotation.y, fusedRotation.z, this->acceleration[0], this->acceleration[1], this->acceleration[2]
-
-    	);
+    		);
+			Serial.printf(">sensor_id:%d\n>rotation_w:%f\n>rotation_x:%f\n>rotation_y:%f\n>rotation_z:%f\n>accel_x:%f\n>accel_y:%f\n>accel_z:%f\n",
+        	sensorId, fusedRotation.w, fusedRotation.x, fusedRotation.y, fusedRotation.z, this->acceleration[0], this->acceleration[1], this->acceleration[2]
+    		);
 		}
 #endif  // SEND_ACCELERATION
 

@@ -104,8 +104,8 @@ void setup() {
 
 	sensorManager.setup();
 
-	networkManager.setup();
-	OTA::otaSetup(otaPassword);
+	//networkManager.setup();
+	//OTA::otaSetup(otaPassword);
 	battery.Setup();
 
 	statusManager.setStatus(SlimeVR::Status::LOADING, false);
@@ -118,8 +118,8 @@ void setup() {
 void loop() {
 	globalTimer.tick();
 	SerialCommands::update();
-	OTA::otaUpdate();
-	networkManager.update();
+	//OTA::otaUpdate();
+	//networkManager.update();
 	sensorManager.update();
 	battery.Loop();
 	ledManager.update();
